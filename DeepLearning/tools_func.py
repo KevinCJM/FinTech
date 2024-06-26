@@ -5,6 +5,8 @@
 @Author: Kevin-Chen
 @Descriptions: 
 """
+import time
+import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib_inline import backend_inline  # 用于在Jupyter中显示图表
 
@@ -118,3 +120,32 @@ def plot(X, Y=None, xlabel=None, ylabel=None, legend=None, xlim=None, ylim=None,
             axes.plot(y, fmt)
     # 设置轴标签、范围和图例
     set_axes(axes, xlabel, ylabel, xlim, ylim, xscale, yscale, legend)
+
+
+class Timer:
+    """记录多次运行时间"""
+
+    def __init__(self):
+        self.times = []
+        self.start()
+
+    def start(self):
+        """启动计时器"""
+        self.tik = time.time()
+
+    def stop(self):
+        """停止计时器并将时间记录在列表中"""
+        self.times.append(time.time() - self.tik)
+        return self.times[-1]
+
+    def avg(self):
+        """返回平均时间"""
+        return sum(self.times) / len(self.times)
+
+    def sum(self):
+        """返回时间总和"""
+        return sum(self.times)
+
+    def cumsum(self):
+        """返回累计时间"""
+        return np.array(self.times).cumsum().tolist()
