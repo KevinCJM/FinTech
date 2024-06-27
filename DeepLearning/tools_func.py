@@ -6,9 +6,11 @@
 @Descriptions: 
 """
 import time
-import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib_inline import backend_inline  # 用于在Jupyter中显示图表
+from mxnet import autograd, gluon, np, npx
+
+npx.set_np()
 
 
 def use_svg_display():
@@ -159,4 +161,3 @@ def synthetic_data(w, b, num_examples):
     y = np.dot(x, w) + b
     y += np.random.normal(0, 0.01, y.shape)
     return x, y.reshape((-1, 1))
-
