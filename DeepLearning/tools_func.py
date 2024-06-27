@@ -122,6 +122,7 @@ def plot(X, Y=None, xlabel=None, ylabel=None, legend=None, xlim=None, ylim=None,
     set_axes(axes, xlabel, ylabel, xlim, ylim, xscale, yscale, legend)
 
 
+# 计算器工具
 class Timer:
     """记录多次运行时间"""
 
@@ -149,3 +150,13 @@ class Timer:
     def cumsum(self):
         """返回累计时间"""
         return np.array(self.times).cumsum().tolist()
+
+
+# 生成数据集
+def synthetic_data(w, b, num_examples):
+    """生成y=Xw+b+噪声"""
+    x = np.random.normal(0, 1, (num_examples, len(w)))
+    y = np.dot(x, w) + b
+    y += np.random.normal(0, 0.01, y.shape)
+    return x, y.reshape((-1, 1))
+
