@@ -216,4 +216,4 @@ if __name__ == '__main__':
     print(f"耗时：{(time.time() - s_t):.2f}秒")
 
     ''' 画图 '''
-    # show_random_weights(samples, fund_codes)
+    show_random_weights(samples, fund_codes)
