@@ -11,8 +11,8 @@ from Audio2Video.to_clean_trans import create_data_for_video
 
 text_beauty = True
 trans_yn = True
-audio_path = "/Users/chenjunming/Downloads/描述性统计.wav"
-output_file_name = "output.mp4"
+audio_path = "/Users/chenjunming/Downloads/推断性统计.wav"
+output_file_name = "推断性统计.mp4"
 
 if __name__ == '__main__':
     # 语音转文字

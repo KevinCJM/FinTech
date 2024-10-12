@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>视频裁剪工具</title>
+    <style>
+        #video-container {
+            position: relative;
+            display: inline-block;
+        }
+        #crop-box {
+            border: 2px dashed red;
+            position: absolute;
+            display: none;
+        }
+        video {
+            width: 640px;
+            height: 360px;
+        }
+        button {
+            margin-top: 10px;
+        }
+        #error-message {
+            color: red;
+            display: none;
+        }
+        /* 加载动画样式 */
+        #loading-animation {
+            display: none;
+            margin-top: 10px;
+        }
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top: 4px solid #3498db;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+<h2>视频裁剪工具</h2>
+
+<!-- 错误提示 -->
+<p id="error-message"></p>
+
+<!-- 视频选择按钮 -->
+<p>选择本地视频: <input type="file" id="video-input" accept="video/*"></p>
+
+<!-- 视频播放区域 -->
+<div id="video-container">
+    <video id="video" controls>
+        您的浏览器不支持视频播放标签。
+    </video>
+    <div id="crop-box"></div>
+</div>
+
+<p>选取区域坐标: x1: <span id="x1">0</span>, y1: <span id="y1">0</span>, x2: <span id="x2">0</span>, y2: <span id="y2">0</span></p>
+<p>
+    开始时间: <input type="number" id="start_time" value="0" step="0.1"> 秒
+    <br>
+    结束时间: <input type="number" id="end_time" step="0.1"> 秒
+</p>
+
+<!-- 视频播放速度调节 -->
+<p>播放速率: </p>
+<select id="speed-select">
+    <option value="0.25">0.25x</option>
+    <option value="0.5">0.5x</option>
+    <option value="0.75">0.75x</option>
+    <option value="1" selected>正常</option>
+    <option value="1.25">1.25x</option>
+    <option value="1.5">1.5x</option>
+    <option value="1.75">1.75x</option>
+    <option value="2">2.0x</option>
+</select>
+
+<!-- 按钮操作 -->
+<button id="select-area-button" disabled>选取画面</button>
+<button id="crop-button" disabled>裁剪视频</button>
+
+<!-- 加载动画 -->
+<div id="loading-animation">
+    <div class="spinner"></div>
+    <p>视频处理中...</p>
+</div>
+
+<script>
+    const video = document.getElementById('video');
+    const cropBox = document.getElementById('crop-box');
+    const speedSelect = document.getElementById('speed-select');
+    let videoSpeed = 1;  // 默认速率为1
+    let startX, startY, endX, endY;
+    let isDrawing = false;
+    let canSelectArea = false;
+    let selectedVideoFile = null;
+
+    // 视频速率调整
+    speedSelect.addEventListener('change', function() {
+        videoSpeed = parseFloat(this.value);
+        video.playbackRate = videoSpeed;  // 调整播放速率
+    });
+
+    // 视频选择
+    document.getElementById('video-input').addEventListener('change', function(event) {
+        const file = event.target.files[0];
+        if (file) {
+            selectedVideoFile = file;
+            const url = URL.createObjectURL(file);
+            video.src = url;
+            video.load();
+            document.getElementById('crop-button').disabled = true;
+            document.getElementById('select-area-button').disabled = false;
+            cropBox.style.display = 'none';
+            document.getElementById('select-area-button').textContent = '选取画面';
+            document.getElementById('error-message').style.display = 'none'; // 清除之前的错误信息
+        }
+    });
+
+    // 点击"选取画面"按钮后允许选取
+    document.getElementById('select-area-button').addEventListener('click', function() {
+        if (!selectedVideoFile) {
+            alert("请先选择一个视频！");
+            return;
+        }
+        canSelectArea = true;
+        document.getElementById('crop-button').disabled = true;
+        cropBox.style.display = 'none';
+        document.getElementById('select-area-button').textContent = '重新选取';
+    });
+
+    // 鼠标按下时开始选取画面区域
+    video.addEventListener('mousedown', function(e) {
+        if (!canSelectArea) return;
+        const rect = video.getBoundingClientRect();
+        startX = e.clientX - rect.left;
+        startY = e.clientY - rect.top;
+        isDrawing = true;
+
+        cropBox.style.left = `${startX}px`;
+        cropBox.style.top = `${startY}px`;
+        cropBox.style.width = '0px';
+        cropBox.style.height = '0px';
+        cropBox.style.display = 'block';
+    });
+
+    // 鼠标拖动时绘制选取区域
+    window.addEventListener('mousemove', function(e) {
+        if (!isDrawing) return;
+
+        const rect = video.getBoundingClientRect();
+        endX = e.clientX - rect.left;
+        endY = e.clientY - rect.top;
+
+        const width = endX - startX;
+        const height = endY - startY;
+
+        cropBox.style.width = `${Math.abs(width)}px`;
+        cropBox.style.height = `${Math.abs(height)}px`;
+
+        if (width < 0) cropBox.style.left = `${endX}px`;
+        if (height < 0) cropBox.style.top = `${endY}px`;
+    });
+
+    // 鼠标释放时停止选取
+    window.addEventListener('mouseup', function(e) {
+        if (!isDrawing) return;
+        isDrawing = false;
+
+        const rect = video.getBoundingClientRect();
+        endX = e.clientX - rect.left;
+        endY = e.clientY - rect.top;
+
+        // 将显示坐标映射到实际视频的原始分辨率
+        const scaleX = video.videoWidth / rect.width;
+        const scaleY = video.videoHeight / rect.height;
+
+        const realX1 = Math.min(startX, endX) * scaleX;
+        const realY1 = Math.min(startY, endY) * scaleY;
+        const realX2 = Math.max(startX, endX) * scaleX;
+        const realY2 = Math.max(startY, endY) * scaleY;
+
+        // 显示映射后的实际坐标
+        document.getElementById('x1').textContent = realX1.toFixed(0);
+        document.getElementById('y1').textContent = realY1.toFixed(0);
+        document.getElementById('x2').textContent = realX2.toFixed(0);
+        document.getElementById('y2').textContent = realY2.toFixed(0);
+
+        // 允许点击裁剪按钮
+        document.getElementById('crop-button').disabled = false;
+        canSelectArea = false;
+    });
+
+    // 点击裁剪按钮，发送坐标和时间到后端进行裁剪
+    document.getElementById('crop-button').addEventListener('click', function() {
+        if (!selectedVideoFile) {
+            alert("请先选择一个视频！");
+            return;
+        }
+
+        const x1 = parseInt(document.getElementById('x1').textContent);
+        const y1 = parseInt(document.getElementById('y1').textContent);
+        const x2 = parseInt(document.getElementById('x2').textContent);
+        const y2 = parseInt(document.getElementById('y2').textContent);
+        const start_time = parseFloat(document.getElementById('start_time').value);
+        const end_time = parseFloat(document.getElementById('end_time').value) || null;
+
+        const formData = new FormData();
+        formData.append('video', selectedVideoFile);
+        formData.append('start_time', start_time);
+        formData.append('end_time', end_time);
+        formData.append('x1', x1);
+        formData.append('y1', y1);
+        formData.append('x2', x2);
+        formData.append('y2', y2);
+        formData.append('speed', videoSpeed);  // 添加速率参数
+
+        // 显示加载动画
+        document.getElementById('loading-animation').style.display = 'block';
+
+        // 禁用所有按钮
+        document.getElementById('crop-button').disabled = true;
+        document.getElementById('select-area-button').disabled = true;
+        document.getElementById('video-input').disabled = true;
+
+        // 使用 fetch 发送请求到后端
+        fetch('/cut_video', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('服务器错误，请稍后再试');
+            }
+            return response.json();
+        })
+        .then(data => {
+            // 裁剪完成后恢复按钮
+            document.getElementById('select-area-button').disabled = false;
+            document.getElementById('crop-button').disabled = false;
+            document.getElementById('video-input').disabled = false;
+
+            // 隐藏加载动画
+            document.getElementById('loading-animation').style.display = 'none';
+
+            // 打开视频保存的文件夹
+            fetch('/open_folder').then(() => {
+                console.log('文件夹已打开');
+            });
+        })
+        .catch(error => {
+            // 显示错误信息
+            document.getElementById('error-message').textContent = error.message;
+            document.getElementById('error-message').style.display = 'block';
+
+            // 恢复按钮状态
+            document.getElementById('select-area-button').disabled = false;
+            document.getElementById('crop-button').disabled = false;
+            document.getElementById('video-input').disabled = false;
+
+            // 隐藏加载动画
+            document.getElementById('loading-animation').style.display = 'none';
+        });
+    });
+</script>
+
+</body>
+</html>
