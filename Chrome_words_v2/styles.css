@@ -1,0 +1,58 @@
+/* styles.css */
+
+/* 气泡图标的样式 */
+#tooltipIcon {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    z-index: 1000000;
+  }
+  
+  #tooltipIcon:hover {
+    opacity: 0.8;
+  }
+  
+  /* 对话框的样式 */
+  #wordDialog {
+    position: absolute;
+    width: 350px;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    padding: 10px;
+    z-index: 1000001;
+    font-family: Arial, sans-serif;
+    color: #000;
+  }
+  
+  #wordDialog strong {
+    font-size: 20px;
+  }
+  
+  #wordDialog hr {
+    margin: 10px 0;
+  }
+  
+  #wordDialog button {
+    background-color: #e0e0e0;
+    border: 1px solid #ccc;
+    padding: 5px 10px;
+    cursor: pointer;
+  }
+  
+  #wordDialog button#dialogAddWord {
+    margin-left: auto;
+  }
+  
+  #wordDialog button#dialogPlayAudio {
+    background: none;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  
+  #wordDialog em {
+    font-style: italic;
+  }
+  

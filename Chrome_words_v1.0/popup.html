@@ -1,0 +1,30 @@
+<!-- popup.html -->
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>单词本</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      width: 300px;
+    }
+    #wordList {
+      list-style: none;
+      padding: 0;
+    }
+    .wordItem {
+      margin-bottom: 10px;
+    }
+    .wordItem button {
+      margin-left: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h2>我的单词本</h2>
+  <input type="text" id="searchInput" placeholder="搜索单词">
+  <ul id="wordList"></ul>
+  <script src="popup.js"></script>
+</body>
+</html>

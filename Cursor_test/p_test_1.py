@@ -90,12 +90,6 @@ fig.update_layout(
     hovermode='x unified'
 )
 
-# 显示图表
-fig.show()
-
-# 如果需要保存为HTML文件
-fig.write_html("gold_price_analysis.html")
-
 # 计算并打印滞后效果
 peak_original = gold_data['Adj Close'].idxmax()
 peak_gaussian = gold_data['Gaussian'].idxmax()
@@ -109,3 +103,38 @@ print(f"卡尔曼滤波峰值日期: {peak_kalman}")
 print(f"高斯滤波滞后天数: {(peak_gaussian - peak_original).days}")
 print(f"移动平均滞后天数: {(peak_ma - peak_original).days}")
 print(f"卡尔曼滤波滞后天数: {(peak_kalman - peak_original).days}")
+
+
+# 设定预测天数
+n_days = 150
+future_dates = [gold_data.index[-1] + pd.Timedelta(days=i) for i in range(1, n_days + 1)]
+future_predictions = []
+
+# 从最后一个已知状态开始预测
+current_state = kalman_smoothed[-1]
+current_covariance = kf.initial_state_covariance
+
+for i in range(n_days):
+    current_state, current_covariance = kf.filter_update(
+        filtered_state_mean=current_state,
+        filtered_state_covariance=current_covariance,
+        observation=None  # 在预测未来时，观测值为None
+    )
+    future_predictions.append(current_state)
+
+# 将预测结果添加到数据帧中以便可视化
+future_data = pd.DataFrame(index=future_dates, data=future_predictions, columns=['Kalman Prediction'])
+gold_data = pd.concat([gold_data, future_data])
+
+# 更新交互式图表以包括预测
+fig.add_trace(go.Scatter(x=future_data.index, y=future_data['Kalman Prediction'], name='卡尔曼预测', mode='lines', line=dict(dash='dash')))
+fig.update_layout(
+    title='黄金ETF调整后收盘价与未来预测 - 原始数据 vs 高斯滤波 vs 移动平均 vs 卡尔曼滤波',
+    xaxis_title='日期',
+    yaxis_title='价格',
+    legend_title='数据类型',
+    hovermode='x unified'
+)
+
+# 重新显示图表
+fig.show()

@@ -1,0 +1,45 @@
+  {
+    "manifest_version": 3,
+    "name": "英语单词背诵助手",
+    "version": "1.4",
+    "description": "帮助用户背诵英语单词的Chrome插件，更新了翻译API并添加了选词气泡功能",
+    "permissions": [
+      "contextMenus",
+      "storage",
+      "scripting",
+      "notifications",
+      "alarms",
+      "activeTab"
+    ],
+    "host_permissions": [
+      "<all_urls>",
+      "https://dict-mobile.iciba.com/*",
+      "https://dict.youdao.com/*",
+      "https://api.dictionaryapi.dev/*"
+    ],
+    "background": {
+      "service_worker": "background.js"
+    },
+    "action": {
+      "default_popup": "popup.html"
+    },
+    "content_scripts": [
+      {
+        "matches": ["<all_urls>"],
+        "js": ["content_script.js"],
+        "css": ["styles.css"]
+      }
+    ],
+    "web_accessible_resources": [
+      {
+        "resources": ["icons/icon16.png", "icons/icon_hover.png"],
+        "matches": ["<all_urls>"]
+      }
+    ],    
+    "icons": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  }
+  
